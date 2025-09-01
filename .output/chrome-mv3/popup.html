@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ConsoleCapture Pro</title>
+    <style>
+        body {
+            width: 320px;
+            min-height: 400px;
+            margin: 0;
+            padding: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-size: 14px;
+            background: #ffffff;
+            color: #333333;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .logo {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1a1a1a;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+
+        .status-dot.active {
+            background: #28a745;
+        }
+
+        .status-text {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #0056b3;
+        }
+
+        .btn-capturing {
+            background: #28a745 !important;
+            color: white !important;
+            animation: capturePulse 2s ease-in-out infinite !important;
+        }
+
+        .btn-capturing:hover:not(:disabled) {
+            background: #218838 !important;
+        }
+
+        @keyframes capturePulse {
+            0%, 100% { 
+                background: #28a745 !important;
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+            }
+            50% { 
+                background: #34ce57 !important;
+                box-shadow: 0 0 0 8px rgba(40, 167, 69, 0);
+            }
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #c82333;
+        }
+
+        .recent-logs {
+            margin-bottom: 16px;
+        }
+
+        .recent-logs-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .recent-logs-title {
+            font-weight: 500;
+            font-size: 13px;
+            color: #495057;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid #ddd;
+            color: #6c757d;
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: #f8f9fa;
+            color: #495057;
+        }
+
+        .log-list {
+            max-height: 120px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            padding: 4px 0;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 11px;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-level {
+            min-width: 40px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .log-level.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .log-level.warn {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .log-level.info {
+            background: #cce7ff;
+            color: #004085;
+        }
+
+        .log-level.log {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .log-message {
+            flex: 1;
+            color: #495057;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .log-time {
+            font-size: 10px;
+            color: #6c757d;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .empty-logs {
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+            padding: 16px;
+            font-style: italic;
+        }
+
+        .session-stats {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 16px;
+            font-size: 11px;
+        }
+
+        .session-stats-title {
+            font-weight: 500;
+            color: #1565c0;
+            margin-bottom: 4px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            color: #1976d2;
+        }
+
+        .settings-row {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #495057;
+            cursor: pointer;
+            gap: 8px;
+        }
+
+        .setting-checkbox {
+            display: none;
+        }
+
+        .checkmark {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 3px;
+            background: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .setting-checkbox:checked + .checkmark {
+            background: #007bff;
+            border-color: #007bff;
+        }
+
+        .setting-checkbox:checked + .checkmark:after {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 1px;
+            width: 4px;
+            height: 8px;
+            border: 2px solid white;
+            border-left: none;
+            border-top: none;
+            transform: rotate(45deg);
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            color: #495057;
+            cursor: pointer;
+            gap: 6px;
+        }
+
+        .setting-radio {
+            display: none;
+        }
+
+        .radio-mark {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #dee2e6;
+            border-radius: 50%;
+            background: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .setting-radio:checked + .radio-mark {
+            border-color: #007bff;
+        }
+
+        .setting-radio:checked + .radio-mark:after {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #007bff;
+        }
+
+        .websocket-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            font-size: 10px;
+            color: #6c757d;
+        }
+
+        .ws-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .ws-disconnected {
+            background: #dc3545;
+        }
+
+        .ws-connecting {
+            background: #ffc107;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .ws-connected {
+            background: #28a745;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .footer {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e5e5;
+            text-align: center;
+            font-size: 11px;
+            color: #6c757d;
+        }
+    </style>
+  <script type="module" crossorigin src="/chunks/popup-CQTz03AG.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">C</div>
+        <div class="title">ConsoleCapture Pro</div>
+    </div>
+
+    <div class="status-card">
+        <div class="status-indicator">
+            <div id="status-dot" class="status-dot"></div>
+            <span id="status-text" class="status-text">Not capturing</span>
+        </div>
+        <div class="settings-row">
+            <div class="setting-label">Indicator Style:</div>
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="indicator-type" value="static" class="setting-radio" checked>
+                    <span class="radio-mark"></span>
+                    Corner
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="indicator-type" value="trail" class="setting-radio">
+                    <span class="radio-mark"></span>
+                    Mouse Trail
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="indicator-type" value="extension" class="setting-radio">
+                    <span class="radio-mark"></span>
+                    Top Center
+                </label>
+            </div>
+        </div>
+        
+        <div class="settings-row">
+            <label class="setting-label">
+                <input type="checkbox" id="vscode-streaming" class="setting-checkbox">
+                <span class="checkmark"></span>
+                Stream to VSCode
+            </label>
+            <div id="websocket-status" class="websocket-status">
+                <span class="ws-indicator ws-disconnected"></span>
+                <span class="ws-text">Disconnected</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="start-btn" class="btn btn-primary">
+            <span>▶</span>
+            Start Capture
+        </button>
+        <button id="stop-btn" class="btn btn-danger" disabled>
+            <span>⏹</span>
+            Stop Capture
+        </button>
+    </div>
+
+    <div id="session-stats" class="session-stats" style="display: none;">
+        <div class="session-stats-title">Session Stats</div>
+        <div class="stats-row">
+            <span>Total Logs:</span>
+            <span id="stats-total">0</span>
+        </div>
+        <div class="stats-row">
+            <span>Errors:</span>
+            <span id="stats-errors">0</span>
+        </div>
+        <div class="stats-row">
+            <span>Warnings:</span>
+            <span id="stats-warnings">0</span>
+        </div>
+        <div class="stats-row">
+            <span>Duration:</span>
+            <span id="stats-duration">0s</span>
+        </div>
+    </div>
+
+    <div id="recent-logs-section" class="recent-logs" style="display: none;">
+        <div class="recent-logs-header">
+            <div class="recent-logs-title">Recent Logs (Last 5)</div>
+            <div class="export-buttons">
+                <button id="copy-vscode-btn" class="btn btn-outline btn-sm">VS Code</button>
+                <button id="copy-claude-btn" class="btn btn-outline btn-sm">Claude</button>
+                <button id="copy-plain-btn" class="btn btn-outline btn-sm">Plain</button>
+                <button id="export-json-btn" class="btn btn-outline btn-sm">JSON</button>
+                <button id="export-debug-btn" class="btn btn-outline btn-sm">Debug</button>
+            </div>
+        </div>
+        <div id="log-list" class="log-list">
+            <div class="empty-logs">No recent logs available</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        v1.0.0 • Made with privacy in mind
+    </div>
+
+</body>
+</html>

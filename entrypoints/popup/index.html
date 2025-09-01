@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ConsoleCapture Pro</title>
+    <style>
+        body {
+            width: 320px;
+            min-height: 400px;
+            margin: 0;
+            padding: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-size: 14px;
+            background: #ffffff;
+            color: #333333;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .logo {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1a1a1a;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+
+        .status-dot.active {
+            background: #28a745;
+        }
+
+        .status-text {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #0056b3;
+        }
+
+        .btn-capturing {
+            background: #28a745 !important;
+            color: white !important;
+            animation: capturePulse 2s ease-in-out infinite !important;
+        }
+
+        .btn-capturing:hover:not(:disabled) {
+            background: #218838 !important;
+        }
+
+        @keyframes capturePulse {
+            0%, 100% { 
+                background: #28a745 !important;
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+            }
+            50% { 
+                background: #34ce57 !important;
+                box-shadow: 0 0 0 8px rgba(40, 167, 69, 0);
+            }
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #c82333;
+        }
+
+        .recent-logs {
+            margin-bottom: 16px;
+        }
+
+        .recent-logs-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .recent-logs-title {
+            font-weight: 500;
+            font-size: 13px;
+            color: #495057;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid #ddd;
+            color: #6c757d;
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: #f8f9fa;
+            color: #495057;
+        }
+
+        .log-list {
+            max-height: 120px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            padding: 4px 0;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 11px;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-level {
+            min-width: 40px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .log-level.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .log-level.warn {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .log-level.info {
+            background: #cce7ff;
+            color: #004085;
+        }
+
+        .log-level.log {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .log-message {
+            flex: 1;
+            color: #495057;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .log-time {
+            font-size: 10px;
+            color: #6c757d;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .empty-logs {
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+            padding: 16px;
+            font-style: italic;
+        }
+
+        .session-stats {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 16px;
+            font-size: 11px;
+        }
+
+        .session-stats-title {
+            font-weight: 500;
+            color: #1565c0;
+            margin-bottom: 4px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            color: #1976d2;
+        }
+
+        .settings-row {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #495057;
+            cursor: pointer;
+            gap: 8px;
+        }
+
+        .setting-checkbox {
+            display: none;
+        }
+
+        .checkmark {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 3px;
+            background: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .setting-checkbox:checked + .checkmark {
+            background: #007bff;
+            border-color: #007bff;
+        }
+
+        .setting-checkbox:checked + .checkmark:after {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 1px;
+            width: 4px;
+            height: 8px;
+            border: 2px solid white;
+            border-left: none;
+            border-top: none;
+            transform: rotate(45deg);
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            color: #495057;
+            cursor: pointer;
+            gap: 6px;
+        }
+
+        .setting-radio {
+            display: none;
+        }
+
+        .radio-mark {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #dee2e6;
+            border-radius: 50%;
+            background: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .setting-radio:checked + .radio-mark {
+            border-color: #007bff;
+        }
+
+        .setting-radio:checked + .radio-mark:after {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #007bff;
+        }
+
+        .websocket-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            font-size: 10px;
+            color: #6c757d;
+        }
+
+        .ws-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .ws-disconnected {
+            background: #dc3545;
+        }
+
+        .ws-connecting {
+            background: #ffc107;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .ws-connected {
+            background: #28a745;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .footer {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e5e5;
+            text-align: center;
+            font-size: 11px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">C</div>
+        <div class="title">ConsoleCapture Pro</div>
+    </div>
+
+    <div class="status-card">
+        <div class="status-indicator">
+            <div id="status-dot" class="status-dot"></div>
+            <span id="status-text" class="status-text">Not capturing</span>
+        </div>
+        <div class="settings-row">
+            <div class="setting-label">Indicator Style:</div>
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="indicator-type" value="static" class="setting-radio" checked>
+                    <span class="radio-mark"></span>
+                    Corner
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="indicator-type" value="trail" class="setting-radio">
+                    <span class="radio-mark"></span>
+                    Mouse Trail
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="indicator-type" value="extension" class="setting-radio">
+                    <span class="radio-mark"></span>
+                    Top Center
+                </label>
+            </div>
+        </div>
+        
+        <div class="settings-row">
+            <label class="setting-label">
+                <input type="checkbox" id="vscode-streaming" class="setting-checkbox">
+                <span class="checkmark"></span>
+                Stream to VSCode
+            </label>
+            <div id="websocket-status" class="websocket-status">
+                <span class="ws-indicator ws-disconnected"></span>
+                <span class="ws-text">Disconnected</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="start-btn" class="btn btn-primary">
+            <span>▶</span>
+            Start Capture
+        </button>
+        <button id="stop-btn" class="btn btn-danger" disabled>
+            <span>⏹</span>
+            Stop Capture
+        </button>
+    </div>
+
+    <div id="session-stats" class="session-stats" style="display: none;">
+        <div class="session-stats-title">Session Stats</div>
+        <div class="stats-row">
+            <span>Total Logs:</span>
+            <span id="stats-total">0</span>
+        </div>
+        <div class="stats-row">
+            <span>Errors:</span>
+            <span id="stats-errors">0</span>
+        </div>
+        <div class="stats-row">
+            <span>Warnings:</span>
+            <span id="stats-warnings">0</span>
+        </div>
+        <div class="stats-row">
+            <span>Duration:</span>
+            <span id="stats-duration">0s</span>
+        </div>
+    </div>
+
+    <div id="recent-logs-section" class="recent-logs" style="display: none;">
+        <div class="recent-logs-header">
+            <div class="recent-logs-title">Recent Logs (Last 5)</div>
+            <div class="export-buttons">
+                <button id="copy-vscode-btn" class="btn btn-outline btn-sm">VS Code</button>
+                <button id="copy-claude-btn" class="btn btn-outline btn-sm">Claude</button>
+                <button id="copy-plain-btn" class="btn btn-outline btn-sm">Plain</button>
+                <button id="export-json-btn" class="btn btn-outline btn-sm">JSON</button>
+                <button id="export-debug-btn" class="btn btn-outline btn-sm">Debug</button>
+            </div>
+        </div>
+        <div id="log-list" class="log-list">
+            <div class="empty-logs">No recent logs available</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        v1.0.0 • Made with privacy in mind
+    </div>
+
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('start-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const indicatorRadios = document.querySelectorAll('input[name="indicator-type"]');
+            const vscodeCheckbox = document.getElementById('vscode-streaming');
+            const wsIndicator = document.querySelector('.ws-indicator');
+            const wsText = document.querySelector('.ws-text');
+
+            // Function to reset buttons to initial start state
+            function resetButtonsToStartState() {
+                statusDot.classList.remove('active');
+                statusText.textContent = 'Not capturing';
+                
+                // Reset start button
+                startBtn.classList.remove('btn-capturing');
+                startBtn.classList.add('btn-primary');
+                startBtn.innerHTML = '<span>▶</span>Start Capture';
+                startBtn.disabled = false;
+                
+                // Reset stop button
+                stopBtn.disabled = true;
+                stopBtn.style.display = 'flex'; // Show it again
+            }
+
+            startBtn.addEventListener('click', async () => {
+                // Check if we're currently capturing (button is in capturing state)
+                if (startBtn.classList.contains('btn-capturing')) {
+                    // Stop capturing
+                    try {
+                        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                        if (!tab?.id) return;
+                        
+                        chrome.tabs.sendMessage(tab.id, { type: 'capture:stop' }, (response) => {
+                            if (chrome.runtime.lastError) {
+                                console.error('Runtime error:', chrome.runtime.lastError);
+                                return;
+                            }
+                            
+                            if (response?.success) {
+                                // Reset button to start state
+                                resetButtonsToStartState();
+                                if (response.session?.stats) {
+                                    updateSessionStats(response.session.stats, response.session.sessionDuration);
+                                }
+                                console.log('Captured logs:', response.session?.logs);
+                            } else {
+                                console.error('Failed to stop capture:', response);
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Error stopping capture:', error);
+                    }
+                    return;
+                }
+                
+                // Start capturing
+                try {
+                    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (!tab?.id) {
+                        console.error('No active tab found');
+                        return;
+                    }
+                    
+                    console.log('Attempting to inject and start capture on tab:', tab.id, tab.url);
+                    
+                    // Try to inject content script first
+                    try {
+                        await chrome.scripting.executeScript({
+                            target: { tabId: tab.id },
+                            func: () => {
+                                if (!window.consoleCapturePro) {
+                                    console.log('Injecting ConsoleCapture Pro manually');
+                                    window.consoleCapturePro = {
+                                        isCapturing: false,
+                                        capturedLogs: [],
+                                        recentLogs: [], // Keep last 5 logs for easy access
+                                        sessionStartTime: null,
+                                        sessionStats: {
+                                            totalLogs: 0,
+                                            errorCount: 0,
+                                            warningCount: 0,
+                                            infoCount: 0,
+                                            logCount: 0
+                                        },
+                                        indicator: null, // Visual capture indicator
+                                        indicatorType: 'static', // Indicator type: static, trail, extension
+                                        mouseTracker: null, // Mouse event listener
+                                        websocket: null, // WebSocket connection to VSCode
+                                        vscodeStreaming: false, // VSCode streaming enabled
+                                        originalConsole: {
+                                            log: console.log,
+                                            warn: console.warn,
+                                            error: console.error,
+                                            info: console.info
+                                        }
+                                    };
+                                    
+                                    // Set up message listener
+                                    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+                                        const { type } = message;
+                                        
+                                        switch (type) {
+                                            case 'capture:start':
+                                                console.log('ConsoleCapture: Starting capture...');
+                                                window.consoleCapturePro.isCapturing = true;
+                                                window.consoleCapturePro.capturedLogs = [];
+                                                window.consoleCapturePro.recentLogs = [];
+                                                window.consoleCapturePro.sessionStartTime = Date.now();
+                                                window.consoleCapturePro.sessionStats = {
+                                                    totalLogs: 0, errorCount: 0, warningCount: 0, 
+                                                    infoCount: 0, logCount: 0
+                                                };
+                                                
+                                                // Update indicator type from payload
+                                                if (message.payload && message.payload.indicatorType) {
+                                                    window.consoleCapturePro.indicatorType = message.payload.indicatorType;
+                                                }
+                                                
+                                                // Update VSCode streaming setting from payload
+                                                if (message.payload && typeof message.payload.vscodeStreaming === 'boolean') {
+                                                    window.consoleCapturePro.vscodeStreaming = message.payload.vscodeStreaming;
+                                                    if (window.consoleCapturePro.vscodeStreaming) {
+                                                        window.consoleCapturePro.connectToVSCode();
+                                                    } else {
+                                                        window.consoleCapturePro.disconnectFromVSCode();
+                                                    }
+                                                }
+                                                
+                                                // Show visual indicator
+                                                window.consoleCapturePro.createIndicator(window.consoleCapturePro.indicatorType);
+                                                
+                                                // Store original methods if not already stored
+                                                if (!window.consoleCapturePro.intercepted) {
+                                                    console.log('ConsoleCapture: Setting up interception...');
+                                                    window.consoleCapturePro.intercepted = true;
+                                                    
+                                                    // Intercept console methods
+                                                    ['log', 'warn', 'error', 'info'].forEach(method => {
+                                                        const original = console[method];
+                                                        console[method] = function(...args) {
+                                                            // Call original first
+                                                            original.apply(console, args);
+                                                            
+                                                            // Then capture if we're capturing
+                                                            if (window.consoleCapturePro && window.consoleCapturePro.isCapturing) {
+                                                                // Enhanced error context capture
+                                                                let stackTrace = null;
+                                                                let sourceInfo = null;
+                                                                
+                                                                // Try to capture stack trace for errors
+                                                                if (method === 'error' || (args.length > 0 && args[0] instanceof Error)) {
+                                                                    try {
+                                                                        const error = args[0] instanceof Error ? args[0] : new Error();
+                                                                        stackTrace = error.stack || null;
+                                                                        
+                                                                        // Extract source info from stack trace
+                                                                        if (stackTrace) {
+                                                                            const stackLines = stackTrace.split('\n');
+                                                                            const firstLine = stackLines.find(line => line.includes('http') || line.includes('file://'));
+                                                                            if (firstLine) {
+                                                                                const match = firstLine.match(/(https?:\/\/[^\s]+|file:\/\/[^\s]+):(\d+):(\d+)/);
+                                                                                if (match) {
+                                                                                    sourceInfo = {
+                                                                                        file: match[1],
+                                                                                        line: parseInt(match[2]),
+                                                                                        column: parseInt(match[3])
+                                                                                    };
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    } catch (e) {
+                                                                        // Stack trace capture failed, continue without it
+                                                                    }
+                                                                }
+                                                                
+                                                                const logEntry = {
+                                                                    level: method,
+                                                                    message: args.map(arg => 
+                                                                        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                                                                    ).join(' '),
+                                                                    timestamp: new Date(),
+                                                                    url: window.location.href,
+                                                                    stackTrace: stackTrace,
+                                                                    sourceInfo: sourceInfo,
+                                                                    userAgent: navigator.userAgent,
+                                                                    viewport: {
+                                                                        width: window.innerWidth,
+                                                                        height: window.innerHeight
+                                                                    }
+                                                                };
+                                                                
+                                                                // Add to main log collection
+                                                                window.consoleCapturePro.capturedLogs.push(logEntry);
+                                                                
+                                                                // Add to recent logs (keep only last 5)
+                                                                window.consoleCapturePro.recentLogs.push(logEntry);
+                                                                if (window.consoleCapturePro.recentLogs.length > 5) {
+                                                                    window.consoleCapturePro.recentLogs.shift();
+                                                                }
+                                                                
+                                                                // Update session stats
+                                                                window.consoleCapturePro.sessionStats.totalLogs++;
+                                                                window.consoleCapturePro.sessionStats[method + 'Count']++;
+                                                                
+                                                                // Stream to VSCode if enabled
+                                                                if (window.consoleCapturePro.vscodeStreaming) {
+                                                                    window.consoleCapturePro.streamToVSCode(logEntry);
+                                                                }
+                                                                
+                                                                // Debug: console.log('ConsoleCapture: Captured log', logEntry);
+                                                            }
+                                                        };
+                                                    });
+                                                }
+                                                
+                                                console.log('ConsoleCapture: Capture started, isCapturing =', window.consoleCapturePro.isCapturing);
+                                                sendResponse({ success: true, session: { id: 'session_' + Date.now(), logs: [] } });
+                                                break;
+                                                
+                                            case 'capture:stop':
+                                                console.log('ConsoleCapture: Stopping capture, current logs:', window.consoleCapturePro.capturedLogs);
+                                                window.consoleCapturePro.isCapturing = false;
+                                                
+                                                // Remove visual indicator
+                                                window.consoleCapturePro.removeIndicator();
+                                                
+                                                const logs = window.consoleCapturePro.capturedLogs.slice();
+                                                const stats = Object.assign({}, window.consoleCapturePro.sessionStats);
+                                                const sessionDuration = Date.now() - window.consoleCapturePro.sessionStartTime;
+                                                
+                                                console.log('ConsoleCapture: Returning logs:', logs);
+                                                sendResponse({ 
+                                                    success: true, 
+                                                    session: { 
+                                                        id: 'session_' + Date.now(), 
+                                                        logs, 
+                                                        stats,
+                                                        sessionDuration: Math.round(sessionDuration / 1000) + 's'
+                                                    }
+                                                });
+                                                break;
+                                                
+                                            case 'capture:status':
+                                                sendResponse({ 
+                                                    success: true, 
+                                                    status: { 
+                                                        isCapturing: window.consoleCapturePro.isCapturing,
+                                                        currentSession: window.consoleCapturePro.isCapturing ? { 
+                                                            logs: window.consoleCapturePro.capturedLogs,
+                                                            stats: window.consoleCapturePro.sessionStats,
+                                                            recentLogs: window.consoleCapturePro.recentLogs
+                                                        } : null
+                                                    }
+                                                });
+                                                break;
+                                                
+                                            case 'get:recent-logs':
+                                                sendResponse({ 
+                                                    success: true, 
+                                                    recentLogs: window.consoleCapturePro.recentLogs || [],
+                                                    stats: window.consoleCapturePro.sessionStats || {}
+                                                });
+                                                break;
+                                                
+                                            case 'export:recent':
+                                                const format = message.payload?.format || 'json';
+                                                const recentLogs = window.consoleCapturePro.recentLogs || [];
+                                                let exportData = '';
+                                                
+                                                if (format === 'json') {
+                                                    exportData = JSON.stringify(recentLogs, null, 2);
+                                                } else if (format === 'vscode') {
+                                                    exportData = '// Console Debug Session - ' + new Date().toLocaleString() + '\n';
+                                                    exportData += '// URL: ' + window.location.href + '\n\n';
+                                                    recentLogs.forEach((log, i) => {
+                                                        exportData += '// [' + log.level.toUpperCase() + '] ' + new Date(log.timestamp).toLocaleTimeString() + '\n';
+                                                        exportData += '// ' + log.message + '\n';
+                                                        if (log.sourceInfo) {
+                                                            exportData += '// File: ' + log.sourceInfo.file + ':' + log.sourceInfo.line + ':' + log.sourceInfo.column + '\n';
+                                                        }
+                                                        if (log.stackTrace) {
+                                                            exportData += '// Stack Trace:\n';
+                                                            log.stackTrace.split('\n').forEach(line => {
+                                                                if (line.trim()) exportData += '//   ' + line.trim() + '\n';
+                                                            });
+                                                        }
+                                                        exportData += '\n';
+                                                    });
+                                                } else if (format === 'claude') {
+                                                    exportData = '# Console Debug Session\n\n';
+                                                    exportData += '**Environment:**\n';
+                                                    exportData += '- URL: `' + window.location.href + '`\n';
+                                                    exportData += '- Timestamp: ' + new Date().toLocaleString() + '\n';
+                                                    exportData += '- User Agent: `' + (recentLogs[0]?.userAgent || 'Unknown') + '`\n\n';
+                                                    exportData += '**Console Logs:**\n\n';
+                                                    recentLogs.forEach((log, i) => {
+                                                        exportData += '## ' + (i + 1) + '. [' + log.level.toUpperCase() + '] ' + new Date(log.timestamp).toLocaleTimeString() + '\n\n';
+                                                        exportData += '```\n' + log.message + '\n```\n\n';
+                                                        if (log.sourceInfo) {
+                                                            exportData += '**Source:** `' + log.sourceInfo.file + ':' + log.sourceInfo.line + ':' + log.sourceInfo.column + '`\n\n';
+                                                        }
+                                                        if (log.stackTrace) {
+                                                            exportData += '**Stack Trace:**\n```\n' + log.stackTrace + '\n```\n\n';
+                                                        }
+                                                        exportData += '---\n\n';
+                                                    });
+                                                } else if (format === 'plain') {
+                                                    recentLogs.forEach((log, i) => {
+                                                        exportData += '[' + log.level.toUpperCase() + '] ' + new Date(log.timestamp).toLocaleTimeString() + ': ' + log.message;
+                                                        if (log.sourceInfo) {
+                                                            exportData += ' (' + log.sourceInfo.file + ':' + log.sourceInfo.line + ')';
+                                                        }
+                                                        exportData += '\n';
+                                                    });
+                                                } else if (format === 'debug') {
+                                                    exportData = '=== DEBUG REPORT ===\n';
+                                                    exportData += 'Generated: ' + new Date().toLocaleString() + '\n';
+                                                    exportData += 'URL: ' + window.location.href + '\n';
+                                                    exportData += 'Session Duration: ' + Math.round((Date.now() - window.consoleCapturePro.sessionStartTime) / 1000) + 's\n';
+                                                    exportData += 'Total Logs: ' + window.consoleCapturePro.sessionStats.totalLogs + '\n';
+                                                    exportData += 'Errors: ' + window.consoleCapturePro.sessionStats.errorCount + '\n';
+                                                    exportData += 'Warnings: ' + window.consoleCapturePro.sessionStats.warningCount + '\n\n';
+                                                    
+                                                    exportData += '=== CONSOLE LOGS ===\n';
+                                                    recentLogs.forEach((log, i) => {
+                                                        exportData += '\n[' + (i + 1) + '] ' + log.level.toUpperCase() + ' - ' + new Date(log.timestamp).toLocaleString() + '\n';
+                                                        exportData += 'Message: ' + log.message + '\n';
+                                                        exportData += 'URL: ' + log.url + '\n';
+                                                        if (log.sourceInfo) {
+                                                            exportData += 'Source: ' + log.sourceInfo.file + ':' + log.sourceInfo.line + ':' + log.sourceInfo.column + '\n';
+                                                        }
+                                                        if (log.viewport) {
+                                                            exportData += 'Viewport: ' + log.viewport.width + 'x' + log.viewport.height + '\n';
+                                                        }
+                                                        if (log.stackTrace) {
+                                                            exportData += 'Stack Trace:\n' + log.stackTrace + '\n';
+                                                        }
+                                                        exportData += '----------------------------------------\n';
+                                                    });
+                                                }
+                                                
+                                                sendResponse({ success: true, exportData, format });
+                                                break;
+                                                
+                                            case 'settings:indicator-type':
+                                                window.consoleCapturePro.indicatorType = message.payload?.indicatorType || 'static';
+                                                // If capturing is active, update the indicator
+                                                if (window.consoleCapturePro.isCapturing && window.consoleCapturePro.indicator) {
+                                                    window.consoleCapturePro.removeIndicator();
+                                                    window.consoleCapturePro.createIndicator(window.consoleCapturePro.indicatorType);
+                                                }
+                                                sendResponse({ success: true, indicatorType: window.consoleCapturePro.indicatorType });
+                                                break;
+                                                
+                                            case 'settings:vscode-streaming':
+                                                window.consoleCapturePro.vscodeStreaming = message.payload?.enabled || false;
+                                                if (window.consoleCapturePro.vscodeStreaming) {
+                                                    window.consoleCapturePro.connectToVSCode();
+                                                } else {
+                                                    window.consoleCapturePro.disconnectFromVSCode();
+                                                }
+                                                sendResponse({ 
+                                                    success: true, 
+                                                    vscodeStreaming: window.consoleCapturePro.vscodeStreaming,
+                                                    websocketStatus: window.consoleCapturePro.websocket?.readyState || WebSocket.CLOSED
+                                                });
+                                                break;
+                                                
+                                            default:
+                                                sendResponse({ success: false, error: 'Unknown message type' });
+                                        }
+                                        
+                                        return true;
+                                    });
+                                    
+                                    // Create visual capture indicator
+                                    window.consoleCapturePro.createIndicator = function(indicatorType = 'static') {
+                                        if (window.consoleCapturePro.indicator) return;
+                                        
+                                        window.consoleCapturePro.indicatorType = indicatorType;
+                                        
+                                        const indicator = document.createElement('div');
+                                        indicator.id = 'console-capture-indicator';
+                                        indicator.innerHTML = '🔴';
+                                        
+                                        if (indicatorType === 'trail') {
+                                            // Mouse trailing indicator
+                                            indicator.style.cssText = 'position: fixed !important; z-index: 2147483647 !important; background: rgba(220, 53, 69, 0.95) !important; color: white !important; padding: 6px 10px !important; border-radius: 50% !important; font-size: 10px !important; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif !important; font-weight: bold !important; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4) !important; pointer-events: auto !important; cursor: pointer !important; animation: consoleCaptureGlow 2s ease-in-out infinite !important; transform: translate(-50%, -50%) !important; transition: all 0.1s ease-out !important;';
+                                            
+                                            // Add mouse tracking
+                                            window.consoleCapturePro.mouseTracker = function(e) {
+                                                if (window.consoleCapturePro.indicator) {
+                                                    window.consoleCapturePro.indicator.style.left = (e.clientX + 20) + 'px';
+                                                    window.consoleCapturePro.indicator.style.top = (e.clientY - 20) + 'px';
+                                                }
+                                            };
+                                            
+                                            document.addEventListener('mousemove', window.consoleCapturePro.mouseTracker);
+                                            
+                                            // Position initially at center
+                                            indicator.style.left = '50%';
+                                            indicator.style.top = '50%';
+                                        } else if (indicatorType === 'extension') {
+                                            // Extension icon style - prominent top-center blinking dot
+                                            indicator.innerHTML = '🔴';
+                                            indicator.style.cssText = 'position: fixed !important; top: 15px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 2147483647 !important; background: rgba(220, 53, 69, 0.95) !important; color: white !important; width: 24px !important; height: 24px !important; border-radius: 50% !important; font-size: 12px !important; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif !important; font-weight: bold !important; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.6) !important; border: 2px solid white !important; pointer-events: auto !important; cursor: pointer !important; animation: consoleCaptureBlinkFast 0.8s ease-in-out infinite !important; display: flex !important; align-items: center !important; justify-content: center !important;';
+                                        } else {
+                                            // Static top-right indicator
+                                            indicator.style.cssText = 'position: fixed !important; top: 20px !important; right: 20px !important; z-index: 2147483647 !important; background: rgba(220, 53, 69, 0.9) !important; color: white !important; padding: 8px 12px !important; border-radius: 20px !important; font-size: 12px !important; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif !important; font-weight: bold !important; box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important; pointer-events: auto !important; cursor: pointer !important; animation: consoleCaptureGlow 2s ease-in-out infinite !important;';
+                                        }
+                                        
+                                        // Add keyframe animation
+                                        if (!document.getElementById('console-capture-styles')) {
+                                            const style = document.createElement('style');
+                                            style.id = 'console-capture-styles';
+                                            style.textContent = '@keyframes consoleCaptureGlow { 0%, 100% { opacity: 0.8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } } @keyframes consoleCaptureBlinkFast { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }';
+                                            document.head.appendChild(style);
+                                        }
+                                        
+                                        // Add click handler to open extension popup
+                                        indicator.addEventListener('click', () => {
+                                            try {
+                                                // Try to send message to background script to open popup
+                                                chrome.runtime.sendMessage({ type: 'open-popup' }, (response) => {
+                                                    if (chrome.runtime.lastError) {
+                                                        console.log('Could not open popup programmatically:', chrome.runtime.lastError);
+                                                        // Fallback: Show a tooltip or notification
+                                                        const tooltip = document.createElement('div');
+                                                        tooltip.textContent = 'Right-click extension icon to open menu';
+                                                        tooltip.style.cssText = 'position: fixed !important; top: 50px !important; right: 50px !important; background: rgba(0,0,0,0.8) !important; color: white !important; padding: 8px 12px !important; border-radius: 4px !important; font-size: 12px !important; z-index: 2147483646 !important; pointer-events: none !important;';
+                                                        document.body.appendChild(tooltip);
+                                                        setTimeout(() => tooltip.remove(), 3000);
+                                                    }
+                                                });
+                                            } catch (error) {
+                                                console.log('Could not access extension API from content script');
+                                            }
+                                        });
+                                        
+                                        document.body.appendChild(indicator);
+                                        window.consoleCapturePro.indicator = indicator;
+                                        console.log('ConsoleCapture: Visual indicator created');
+                                    };
+                                    
+                                    window.consoleCapturePro.removeIndicator = function() {
+                                        if (window.consoleCapturePro.indicator) {
+                                            window.consoleCapturePro.indicator.remove();
+                                            window.consoleCapturePro.indicator = null;
+                                        }
+                                        
+                                        // Clean up mouse tracking if it was enabled
+                                        if (window.consoleCapturePro.mouseTracker) {
+                                            document.removeEventListener('mousemove', window.consoleCapturePro.mouseTracker);
+                                            window.consoleCapturePro.mouseTracker = null;
+                                        }
+                                    };
+                                    
+                                    // WebSocket functionality for VSCode streaming
+                                    window.consoleCapturePro.connectToVSCode = function() {
+                                        if (window.consoleCapturePro.websocket && window.consoleCapturePro.websocket.readyState === WebSocket.OPEN) {
+                                            return; // Already connected
+                                        }
+                                        
+                                        try {
+                                            window.consoleCapturePro.websocket = new WebSocket('ws://localhost:8765');
+                                            
+                                            window.consoleCapturePro.websocket.onopen = function() {
+                                                console.log('ConsoleCapture: Connected to VSCode extension');
+                                                window.consoleCapturePro.websocket.send(JSON.stringify({
+                                                    type: 'session:start',
+                                                    url: window.location.href,
+                                                    timestamp: new Date().toISOString(),
+                                                    userAgent: navigator.userAgent
+                                                }));
+                                            };
+                                            
+                                            window.consoleCapturePro.websocket.onclose = function() {
+                                                console.log('ConsoleCapture: Disconnected from VSCode extension');
+                                                setTimeout(() => {
+                                                    if (window.consoleCapturePro.vscodeStreaming) {
+                                                        window.consoleCapturePro.connectToVSCode(); // Auto-reconnect
+                                                    }
+                                                }, 3000);
+                                            };
+                                            
+                                            window.consoleCapturePro.websocket.onerror = function(error) {
+                                                console.log('ConsoleCapture: WebSocket error:', error);
+                                            };
+                                        } catch (error) {
+                                            console.log('ConsoleCapture: Failed to connect to VSCode:', error);
+                                        }
+                                    };
+                                    
+                                    window.consoleCapturePro.disconnectFromVSCode = function() {
+                                        if (window.consoleCapturePro.websocket) {
+                                            window.consoleCapturePro.websocket.close();
+                                            window.consoleCapturePro.websocket = null;
+                                        }
+                                    };
+                                    
+                                    window.consoleCapturePro.streamToVSCode = function(logEntry) {
+                                        if (window.consoleCapturePro.websocket && 
+                                            window.consoleCapturePro.websocket.readyState === WebSocket.OPEN) {
+                                            try {
+                                                window.consoleCapturePro.websocket.send(JSON.stringify({
+                                                    type: 'log:entry',
+                                                    ...logEntry
+                                                }));
+                                            } catch (error) {
+                                                console.log('ConsoleCapture: Failed to stream log to VSCode:', error);
+                                            }
+                                        }
+                                    };
+                                }
+                            }
+                        });
+                    } catch (injectError) {
+                        console.error('Failed to inject script:', injectError);
+                    }
+                    
+                    // Now try to send the message  
+                    setTimeout(() => {
+                        const selectedIndicator = document.querySelector('input[name="indicator-type"]:checked')?.value || 'static';
+                        chrome.tabs.sendMessage(tab.id, { 
+                            type: 'capture:start', 
+                            payload: { 
+                                indicatorType: selectedIndicator,
+                                vscodeStreaming: vscodeCheckbox.checked
+                            }
+                        }, (response) => {
+                            if (chrome.runtime.lastError) {
+                                console.error('Runtime error:', chrome.runtime.lastError);
+                                return;
+                            }
+                            
+                            if (response?.success) {
+                                statusDot.classList.add('active');
+                                statusText.textContent = 'Capturing';
+                                
+                                // Transform start button to capturing state
+                                startBtn.classList.remove('btn-primary');
+                                startBtn.classList.add('btn-capturing');
+                                startBtn.innerHTML = '<span>⏸</span>Capturing...';
+                                startBtn.disabled = false; // Keep enabled for stopping
+                                
+                                stopBtn.disabled = true; // Hide stop button functionality
+                                stopBtn.style.display = 'none';
+                                
+                                document.getElementById('recent-logs-section').style.display = 'block';
+                                document.getElementById('session-stats').style.display = 'block';
+                                updateRecentLogs();
+                                console.log('Capture started successfully');
+                            } else {
+                                console.error('Failed to start capture:', response);
+                            }
+                        });
+                    }, 100);
+                    
+                } catch (error) {
+                    console.error('Error starting capture:', error);
+                }
+            });
+
+            // Indicator type radio button handlers
+            indicatorRadios.forEach(radio => {
+                radio.addEventListener('change', async () => {
+                    if (!radio.checked) return;
+                    
+                    try {
+                        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                        if (!tab?.id) return;
+                        
+                        chrome.tabs.sendMessage(tab.id, { 
+                            type: 'settings:indicator-type', 
+                            payload: { indicatorType: radio.value }
+                        }, (response) => {
+                            if (chrome.runtime.lastError) {
+                                console.error('Failed to update indicator type:', chrome.runtime.lastError);
+                                return;
+                            }
+                            console.log('Indicator type updated:', response?.indicatorType);
+                        });
+                    } catch (error) {
+                        console.error('Error updating indicator type:', error);
+                    }
+                });
+            });
+
+            // VSCode streaming checkbox handler
+            vscodeCheckbox.addEventListener('change', async () => {
+                try {
+                    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (!tab?.id) return;
+                    
+                    // Update WebSocket status to connecting
+                    if (vscodeCheckbox.checked) {
+                        updateWebSocketStatus('connecting');
+                    }
+                    
+                    chrome.tabs.sendMessage(tab.id, { 
+                        type: 'settings:vscode-streaming', 
+                        payload: { enabled: vscodeCheckbox.checked }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            console.error('Failed to update VSCode streaming:', chrome.runtime.lastError);
+                            updateWebSocketStatus('disconnected');
+                            return;
+                        }
+                        
+                        if (response?.success) {
+                            const status = response.websocketStatus;
+                            if (status === WebSocket.OPEN) {
+                                updateWebSocketStatus('connected');
+                            } else if (status === WebSocket.CONNECTING) {
+                                updateWebSocketStatus('connecting');
+                            } else {
+                                updateWebSocketStatus('disconnected');
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error updating VSCode streaming:', error);
+                }
+            });
+
+            // Function to update WebSocket status indicator
+            function updateWebSocketStatus(status) {
+                wsIndicator.className = 'ws-indicator ws-' + status;
+                switch(status) {
+                    case 'connected':
+                        wsText.textContent = 'Connected to VSCode';
+                        break;
+                    case 'connecting':
+                        wsText.textContent = 'Connecting...';
+                        break;
+                    case 'disconnected':
+                    default:
+                        wsText.textContent = 'Disconnected';
+                        break;
+                }
+            }
+
+            stopBtn.addEventListener('click', async () => {
+                try {
+                    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (!tab?.id) return;
+                    
+                    chrome.tabs.sendMessage(tab.id, { type: 'capture:stop' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            console.error('Runtime error:', chrome.runtime.lastError);
+                            return;
+                        }
+                        
+                        if (response?.success) {
+                            resetButtonsToStartState();
+                            if (response.session?.stats) {
+                                updateSessionStats(response.session.stats, response.session.sessionDuration);
+                            }
+                            console.log('Captured logs:', response.session?.logs);
+                        } else {
+                            console.error('Failed to stop capture:', response);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error stopping capture:', error);
+                }
+            });
+
+            // Check initial status
+            setTimeout(() => {
+                chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+                    if (!tab?.id) return;
+                    
+                    chrome.tabs.sendMessage(tab.id, { type: 'capture:status' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            return;
+                        }
+                        
+                        if (response?.success && response.status?.isCapturing) {
+                            statusDot.classList.add('active');
+                            statusText.textContent = 'Capturing';
+                            
+                            // Set button to capturing state
+                            startBtn.classList.remove('btn-primary');
+                            startBtn.classList.add('btn-capturing');
+                            startBtn.innerHTML = '<span>⏸</span>Capturing...';
+                            startBtn.disabled = false;
+                            
+                            stopBtn.disabled = true;
+                            stopBtn.style.display = 'none';
+                            
+                            document.getElementById('recent-logs-section').style.display = 'block';
+                            document.getElementById('session-stats').style.display = 'block';
+                            updateRecentLogs();
+                        }
+                    });
+                });
+            }, 100);
+
+            // Update recent logs display
+            async function updateRecentLogs() {
+                try {
+                    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (!tab?.id) return;
+                    
+                    chrome.tabs.sendMessage(tab.id, { type: 'get:recent-logs' }, (response) => {
+                        if (chrome.runtime.lastError) return;
+                        
+                        if (response?.success) {
+                            displayRecentLogs(response.recentLogs || []);
+                            if (response.stats) {
+                                updateSessionStats(response.stats);
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error updating recent logs:', error);
+                }
+            }
+
+            function displayRecentLogs(logs) {
+                const logList = document.getElementById('log-list');
+                
+                if (!logs || logs.length === 0) {
+                    logList.innerHTML = '<div class="empty-logs">No recent logs available</div>';
+                    return;
+                }
+                
+                logList.innerHTML = logs.map(log => {
+                    const time = new Date(log.timestamp).toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    const truncatedMessage = log.message.length > 60 
+                        ? log.message.substring(0, 60) + '...' 
+                        : log.message;
+                        
+                    return '<div class="log-entry">' +
+                        '<div class="log-level ' + log.level + '">' + log.level + '</div>' +
+                        '<div class="log-message">' + truncatedMessage + '</div>' +
+                        '<div class="log-time">' + time + '</div>' +
+                        '</div>';
+                }).join('');
+            }
+
+            function updateSessionStats(stats, duration) {
+                if (stats) {
+                    document.getElementById('stats-total').textContent = stats.totalLogs || 0;
+                    document.getElementById('stats-errors').textContent = stats.errorCount || 0;
+                    document.getElementById('stats-warnings').textContent = stats.warningCount || 0;
+                }
+                if (duration) {
+                    document.getElementById('stats-duration').textContent = duration;
+                }
+            }
+
+            // Export functionality - Copy buttons
+            async function copyToClipboard(format, buttonId) {
+                try {
+                    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (!tab?.id) return;
+                    
+                    chrome.tabs.sendMessage(tab.id, { type: 'export:recent', payload: { format } }, (response) => {
+                        if (chrome.runtime.lastError || !response?.success) return;
+                        
+                        navigator.clipboard.writeText(response.exportData).then(() => {
+                            const btn = document.getElementById(buttonId);
+                            const originalText = btn.textContent;
+                            btn.textContent = '\u2713 Copied!';
+                            btn.style.background = '#28a745';
+                            btn.style.color = 'white';
+                            setTimeout(() => {
+                                btn.textContent = originalText;
+                                btn.style.background = '';
+                                btn.style.color = '';
+                            }, 2000);
+                        });
+                    });
+                } catch (error) {
+                    console.error('Error copying logs:', error);
+                }
+            }
+
+            // Copy button event listeners
+            document.getElementById('copy-vscode-btn').addEventListener('click', () => {
+                copyToClipboard('vscode', 'copy-vscode-btn');
+            });
+
+            document.getElementById('copy-claude-btn').addEventListener('click', () => {
+                copyToClipboard('claude', 'copy-claude-btn');
+            });
+
+            document.getElementById('copy-plain-btn').addEventListener('click', () => {
+                copyToClipboard('plain', 'copy-plain-btn');
+            });
+
+            // File export buttons
+            document.getElementById('export-json-btn').addEventListener('click', async () => {
+                await exportLogs('json');
+            });
+
+            document.getElementById('export-debug-btn').addEventListener('click', async () => {
+                await exportLogs('debug');
+            });
+
+            async function exportLogs(format) {
+                try {
+                    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (!tab?.id) return;
+                    
+                    chrome.tabs.sendMessage(tab.id, { type: 'export:recent', payload: { format } }, (response) => {
+                        if (chrome.runtime.lastError || !response?.success) return;
+                        
+                        let mimeType = 'text/plain';
+                        let extension = 'txt';
+                        
+                        if (format === 'json') {
+                            mimeType = 'application/json';
+                            extension = 'json';
+                        } else if (format === 'debug') {
+                            mimeType = 'text/plain';
+                            extension = 'log';
+                        }
+                        
+                        const blob = new Blob([response.exportData], { type: mimeType });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'console-logs-' + new Date().toISOString().split('T')[0] + '.' + extension;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    });
+                } catch (error) {
+                    console.error('Error exporting logs:', error);
+                }
+            }
+
+            // Periodically update recent logs when capturing
+            setInterval(() => {
+                const isCapturing = statusDot.classList.contains('active');
+                if (isCapturing) {
+                    updateRecentLogs();
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

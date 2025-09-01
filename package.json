@@ -1,0 +1,61 @@
+{
+  "name": "console-capture-pro",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Intelligent browser extension for secure console log capture and developer productivity",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "compile": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --skipLibCheck",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "security:pii-detection-tests": "vitest run tests/security/pii-detection.test.ts",
+    "security:encryption-tests": "vitest run tests/security/encryption.test.ts",
+    "security:csp-compliance-tests": "vitest run tests/security/csp-compliance.test.ts",
+    "prepare": "husky install"
+  },
+  "keywords": [
+    "browser-extension",
+    "developer-tools",
+    "console-logs",
+    "debugging",
+    "privacy"
+  ],
+  "author": "ConsoleCapture Pro Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chrome": "^0.0.258",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitest/coverage-v8": "^1.2.2",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "husky": "^9.0.10",
+    "prettier": "^3.2.5",
+    "typescript": "^5.9.2",
+    "vitest": "^1.2.2",
+    "wxt": "^0.17.12"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs": "^4.17.0",
+    "zod": "^3.22.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "typescript"
+      ]
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "name": "console-capture-pro",
+  "displayName": "Console Capture Pro",
+  "description": "Real-time console log streaming from browser extensions",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Debuggers",
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:consoleCapture.startServer",
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "consoleCapture.startServer",
+        "title": "Start Console Capture Server",
+        "category": "Console Capture"
+      },
+      {
+        "command": "consoleCapture.stopServer",
+        "title": "Stop Console Capture Server",
+        "category": "Console Capture"
+      },
+      {
+        "command": "consoleCapture.clearLogs",
+        "title": "Clear Console Logs",
+        "category": "Console Capture"
+      },
+      {
+        "command": "consoleCapture.exportLogs",
+        "title": "Export Console Logs",
+        "category": "Console Capture"
+      }
+    ],
+    "views": {
+      "consoleCapture": [
+        {
+          "id": "consoleCaptureExplorer",
+          "name": "Console Logs",
+          "when": "true"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "consoleCapture",
+          "title": "Console Capture Pro",
+          "icon": "$(debug-console)"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Console Capture Pro",
+      "properties": {
+        "consoleCapture.port": {
+          "type": "number",
+          "default": 8765,
+          "description": "WebSocket server port for receiving console logs"
+        },
+        "consoleCapture.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start the WebSocket server when VSCode opens"
+        },
+        "consoleCapture.maxLogs": {
+          "type": "number",
+          "default": 1000,
+          "description": "Maximum number of logs to keep in memory"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "18.x",
+    "@types/vscode": "^1.74.0",
+    "@types/ws": "^8.18.1",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "ws": "^8.14.0"
+  }
+}
