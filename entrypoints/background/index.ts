@@ -3,6 +3,8 @@
  * Manages extension lifecycle and basic communication
  */
 
+import { defineBackground } from 'wxt/sandbox';
+
 export default defineBackground(() => {
   console.log('ConsoleCapture Pro background script started');
 
@@ -87,10 +89,28 @@ export default defineBackground(() => {
         sendResponse({ success: true, message: 'Background script alive' });
         break;
 
+      case 'websocket:status':
+        // Return the current WebSocket connection status
+        const wsState = vscodeWebSocket?.readyState;
+        let websocketStatus = 'disconnected';
+
+        if (wsState === WebSocket.OPEN) {
+          websocketStatus = 'connected';
+        } else if (wsState === WebSocket.CONNECTING) {
+          websocketStatus = 'connecting';
+        }
+
+        sendResponse({
+          success: true,
+          websocketStatus,
+          sessionId: currentSessionId
+        });
+        break;
+
       case 'config:get':
         // Return default config for now
-        sendResponse({ 
-          success: true, 
+        sendResponse({
+          success: true,
           config: {
             capturedLevels: ['error', 'warn', 'info', 'log'],
             privacy: { enablePIIDetection: true },

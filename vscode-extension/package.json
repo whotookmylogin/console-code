@@ -3,6 +3,13 @@
   "displayName": "Console Capture Pro",
   "description": "Real-time console log streaming from browser extensions",
   "version": "1.0.0",
+  "publisher": "console-capture-team",
+  "author": "Console Capture Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whotookmylogin/console-code.git"
+  },
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -11,8 +18,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:consoleCapture.startServer",
-    "onStartupFinished"
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {

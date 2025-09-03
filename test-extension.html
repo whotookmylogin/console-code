@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Capture Extension Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .log-output {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: white;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Console Capture Pro Extension Test</h1>
+    
+    <div id="status" class="status disconnected">
+        WebSocket Status: Disconnected
+    </div>
+    
+    <div>
+        <button onclick="connectWebSocket()">Connect to Extension</button>
+        <button onclick="testConsoleLogs()">Send Test Logs</button>
+        <button onclick="clearLogs()">Clear Logs</button>
+    </div>
+    
+    <div class="log-output">
+        <h3>Sent Messages:</h3>
+        <div id="logOutput"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        const statusEl = document.getElementById('status');
+        const logOutput = document.getElementById('logOutput');
+        
+        function connectWebSocket() {
+            if (ws) {
+                ws.close();
+            }
+            
+            try {
+                ws = new WebSocket('ws://localhost:8765');
+                
+                ws.onopen = () => {
+                    statusEl.textContent = 'WebSocket Status: Connected';
+                    statusEl.className = 'status connected';
+                    logMessage('✅ Connected to Console Capture Pro extension');
+                    
+                    // Send initial connection message
+                    const connectMsg = {
+                        type: 'connection',
+                        url: window.location.href,
+                        timestamp: new Date().toISOString()
+                    };
+                    ws.send(JSON.stringify(connectMsg));
+                };
+                
+                ws.onclose = () => {
+                    statusEl.textContent = 'WebSocket Status: Disconnected';
+                    statusEl.className = 'status disconnected';
+                    logMessage('❌ Disconnected from extension');
+                };
+                
+                ws.onerror = (error) => {
+                    statusEl.textContent = 'WebSocket Status: Error';
+                    statusEl.className = 'status disconnected';
+                    logMessage('⚠️ WebSocket error - make sure VS Code extension is running');
+                };
+                
+                ws.onmessage = (event) => {
+                    logMessage('📥 Received: ' + event.data);
+                };
+                
+            } catch (error) {
+                logMessage('❌ Failed to connect: ' + error.message);
+            }
+        }
+        
+        function testConsoleLogs() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert('Please connect to the extension first!');
+                return;
+            }
+            
+            // Send various console log types
+            const testLogs = [
+                { type: 'log', level: 'log', message: 'This is a regular console.log message', timestamp: new Date().toISOString() },
+                { type: 'log', level: 'info', message: 'This is an info message', timestamp: new Date().toISOString() },
+                { type: 'log', level: 'warn', message: 'This is a warning message', timestamp: new Date().toISOString() },
+                { type: 'log', level: 'error', message: 'This is an error message', timestamp: new Date().toISOString(), stack: 'Error stack trace here' },
+                { type: 'log', level: 'debug', message: 'This is a debug message', timestamp: new Date().toISOString() }
+            ];
+            
+            testLogs.forEach((log, index) => {
+                setTimeout(() => {
+                    ws.send(JSON.stringify(log));
+                    logMessage(`📤 Sent ${log.level}: ${log.message}`);
+                    
+                    // Also log to browser console for comparison
+                    console[log.level](log.message);
+                }, index * 500);
+            });
+        }
+        
+        function clearLogs() {
+            logOutput.innerHTML = '';
+        }
+        
+        function logMessage(msg) {
+            const entry = document.createElement('div');
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logOutput.appendChild(entry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+        
+        // Auto-connect on page load
+        window.addEventListener('load', () => {
+            setTimeout(connectWebSocket, 1000);
+        });
+    </script>
+</body>
+</html>

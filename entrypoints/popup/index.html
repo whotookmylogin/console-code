@@ -1100,32 +1100,46 @@
                 try {
                     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
                     if (!tab?.id) return;
-                    
+
                     // Update WebSocket status to connecting
                     if (vscodeCheckbox.checked) {
                         updateWebSocketStatus('connecting');
                     }
-                    
-                    chrome.tabs.sendMessage(tab.id, { 
-                        type: 'settings:vscode-streaming', 
+
+                    // Enable/disable VSCode streaming in content script
+                    chrome.tabs.sendMessage(tab.id, {
+                        type: 'settings:vscode-streaming',
                         payload: { enabled: vscodeCheckbox.checked }
-                    }, (response) => {
+                    }, (contentResponse) => {
                         if (chrome.runtime.lastError) {
                             console.error('Failed to update VSCode streaming:', chrome.runtime.lastError);
                             updateWebSocketStatus('disconnected');
                             return;
                         }
-                        
-                        if (response?.success) {
-                            const status = response.websocketStatus;
-                            if (status === WebSocket.OPEN) {
-                                updateWebSocketStatus('connected');
-                            } else if (status === WebSocket.CONNECTING) {
-                                updateWebSocketStatus('connecting');
+
+                        // Now check actual WebSocket connection status from background script
+                        chrome.runtime.sendMessage({
+                            type: 'websocket:status'
+                        }, (backgroundResponse) => {
+                            if (chrome.runtime.lastError) {
+                                console.error('Failed to get WebSocket status:', chrome.runtime.lastError);
+                                updateWebSocketStatus('disconnected');
+                                return;
+                            }
+
+                            if (backgroundResponse?.success) {
+                                const status = backgroundResponse.websocketStatus;
+                                if (status === 'connected') {
+                                    updateWebSocketStatus('connected');
+                                } else if (status === 'connecting') {
+                                    updateWebSocketStatus('connecting');
+                                } else {
+                                    updateWebSocketStatus('disconnected');
+                                }
                             } else {
                                 updateWebSocketStatus('disconnected');
                             }
-                        }
+                        });
                     });
                 } catch (error) {
                     console.error('Error updating VSCode streaming:', error);
@@ -1175,29 +1189,45 @@
                 }
             });
 
+            // Check initial WebSocket status
+            chrome.runtime.sendMessage({ type: 'websocket:status' }, (response) => {
+                if (!chrome.runtime.lastError && response?.success) {
+                    const status = response.websocketStatus;
+                    if (status === 'connected') {
+                        updateWebSocketStatus('connected');
+                    } else if (status === 'connecting') {
+                        updateWebSocketStatus('connecting');
+                    } else {
+                        updateWebSocketStatus('disconnected');
+                    }
+                } else {
+                    updateWebSocketStatus('disconnected');
+                }
+            });
+
             // Check initial status
             setTimeout(() => {
                 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
                     if (!tab?.id) return;
-                    
+
                     chrome.tabs.sendMessage(tab.id, { type: 'capture:status' }, (response) => {
                         if (chrome.runtime.lastError) {
                             return;
                         }
-                        
+
                         if (response?.success && response.status?.isCapturing) {
                             statusDot.classList.add('active');
                             statusText.textContent = 'Capturing';
-                            
+
                             // Set button to capturing state
                             startBtn.classList.remove('btn-primary');
                             startBtn.classList.add('btn-capturing');
                             startBtn.innerHTML = '<span>⏸</span>Capturing...';
                             startBtn.disabled = false;
-                            
+
                             stopBtn.disabled = true;
                             stopBtn.style.display = 'none';
-                            
+
                             document.getElementById('recent-logs-section').style.display = 'block';
                             document.getElementById('session-stats').style.display = 'block';
                             updateRecentLogs();
